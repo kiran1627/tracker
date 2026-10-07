@@ -61,7 +61,7 @@ export function HabitsClient({
   const archivedHabits = habits.filter((h) => !h.active);
 
   const handleComplete = (habitId: string) => {
-    startTransition(() => completeHabit(habitId, todayStr));
+    startTransition(async () => { await completeHabit(habitId, todayStr); });
   };
 
   const handleCreate = (e: React.FormEvent) => {
@@ -84,7 +84,7 @@ export function HabitsClient({
 
   const handleDelete = (id: string) => {
     if (confirm('Delete this habit and all its logs?')) {
-      startTransition(() => deleteHabit(id));
+      startTransition(async () => { await deleteHabit(id); });
     }
   };
 

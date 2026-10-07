@@ -66,12 +66,12 @@ export function GoalsClient({ goals }: { goals: any[] }) {
   };
 
   const handleComplete = (goalId: string) => {
-    startTransition(() => updateGoal(goalId, { status: 'COMPLETED' }));
+    startTransition(async () => { await updateGoal(goalId, { status: 'COMPLETED' }); });
   };
 
   const handleDelete = (goalId: string) => {
     if (confirm('Delete this goal? Associated habits and tasks will remain.')) {
-      startTransition(() => deleteGoal(goalId));
+      startTransition(async () => { await deleteGoal(goalId); });
     }
   };
 

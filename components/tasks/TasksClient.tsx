@@ -116,7 +116,7 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
               {/* Checkbox */}
               <button
                 id={`task-check-${task.id}`}
-                onClick={() => startTransition(() => completeTask(task.id))}
+                onClick={() => startTransition(async () => { await completeTask(task.id); })}
                 className={cn('task-check mt-0.5', task.completed ? 'checked' : 'unchecked')}
                 aria-label={task.completed ? 'Undo' : 'Complete'}
               >
@@ -155,7 +155,7 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
               {/* Delete */}
               <button
                 onClick={() => {
-                  if (confirm('Delete task?')) startTransition(() => deleteTask(task.id));
+                  if (confirm('Delete task?')) startTransition(async () => { await deleteTask(task.id); });
                 }}
                 className="opacity-0 group-hover:opacity-100 p-1.5 rounded text-slate-300 hover:text-red-500 transition-all"
               >
