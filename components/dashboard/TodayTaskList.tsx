@@ -29,12 +29,16 @@ export function TodayTaskList({ tasks }: { tasks: Task[] }) {
   });
 
   const handleComplete = (id: string) => {
-    startTransition(() => completeTask(id));
+    startTransition(async () => {
+      await completeTask(id);
+    });
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Delete this task?')) {
-      startTransition(() => deleteTask(id));
+      startTransition(async () => {
+        await deleteTask(id);
+      });
     }
   };
 

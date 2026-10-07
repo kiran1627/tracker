@@ -27,7 +27,9 @@ export function TodayHabitList({ habits, todayStr }: TodayHabitListProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleComplete = (habitId: string) => {
-    startTransition(() => completeHabit(habitId, todayStr));
+    startTransition(async () => {
+      await completeHabit(habitId, todayStr);
+    });
   };
 
   const pending = habits.filter((h) => !h.logs[0]?.completed);
