@@ -4,6 +4,8 @@ import nodemailer from 'nodemailer';
 import { format } from 'date-fns';
 import { today } from '@/lib/dates';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
     // 1. Verify Vercel Cron request using secret
