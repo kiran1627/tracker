@@ -158,6 +158,7 @@ export function TodayTaskList({ tasks }: { tasks: Task[] }) {
                 <option value="HIGH">High</option>
               </select>
             </div>
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Time (optional)
               </label>
