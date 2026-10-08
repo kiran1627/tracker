@@ -1,21 +1,27 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { format } from 'date-fns';
 import { today } from '@/lib/dates';
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function GET(req: Request) {
   try {
-    // Vercel sends a CRON_SECRET header to prove the request is legitimately from Vercel
+    // 1. Verify Vercel Cron request using secret
     const authHeader = req.headers.get('authorization');
     if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // 1. Fetch all users who have an email
+    // 2. Configure Nodemailer with Gmail SMTP
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD,
+      },
+    });
+
+    // 3. Fetch all users who have an email
     const users = await prisma.user.findMany({
       where: { email: { not: null } }
     });
@@ -26,7 +32,7 @@ export async function GET(req: Request) {
     for (const user of users) {
       if (!user.email) continue;
 
-      // 2. Find pending tasks for today
+      // 4. Find pending tasks for today
       const pendingTasks = await prisma.task.findMany({
         where: {
           userId: user.id,
@@ -38,7 +44,7 @@ export async function GET(req: Request) {
       // If they have no tasks today, skip sending an email
       if (pendingTasks.length === 0) continue; 
 
-      // 3. Build the email body
+      // 5. Build the email body
       const taskListHtml = pendingTasks
         .map(t => `<li style="margin-bottom: 8px;"><b>${t.title}</b> <span style="color: gray; font-size: 12px;">(${t.priority.toLowerCase()} priority)</span></li>`)
         .join('');
@@ -57,9 +63,9 @@ export async function GET(req: Request) {
         </div>
       `;
 
-      // 4. Send the email using Resend
-      await resend.emails.send({
-        from: 'HabitFlow <onboarding@resend.dev>', // onboarding@resend.dev is the default testing domain for Resend
+      // 6. Send the email using Gmail
+      await transporter.sendMail({
+        from: `"HabitFlow" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: `📅 Your Tasks for ${format(new Date(), 'MMMM d')}`,
         html: htmlContent,
