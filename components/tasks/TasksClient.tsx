@@ -26,7 +26,12 @@ interface Goal {
   title: string;
 }
 
-export function TasksClient({ tasks: initialTasks, goals }: { tasks: Task[]; goals: Goal[] }) {
+interface Habit {
+  id: string;
+  title: string;
+}
+
+export function TasksClient({ tasks: initialTasks, goals, habits = [] }: { tasks: Task[]; goals: Goal[]; habits?: Habit[] }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -41,6 +46,7 @@ export function TasksClient({ tasks: initialTasks, goals }: { tasks: Task[]; goa
     date: format(new Date(), 'yyyy-MM-dd'),
     priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH',
     goalId: '',
+    habitId: '',
     estimatedMin: '',
     time: '',
   });
@@ -62,10 +68,11 @@ export function TasksClient({ tasks: initialTasks, goals }: { tasks: Task[]; goa
         date: form.date,
         priority: form.priority,
         goalId: form.goalId || undefined,
+        habitId: form.habitId || undefined,
         estimatedMin: form.estimatedMin ? parseInt(form.estimatedMin) : undefined,
         time: form.time || undefined,
       });
-      setForm({ title: '', description: '', date: format(new Date(), 'yyyy-MM-dd'), priority: 'MEDIUM', goalId: '', estimatedMin: '', time: '' });
+      setForm({ title: '', description: '', date: format(new Date(), 'yyyy-MM-dd'), priority: 'MEDIUM', goalId: '', habitId: '', estimatedMin: '', time: '' });
       setOpen(false);
     });
   };
@@ -257,21 +264,39 @@ export function TasksClient({ tasks: initialTasks, goals }: { tasks: Task[]; goa
               />
             </div>
           </div>
-          {goals.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Goal</label>
-              <select
-                className="select"
-                value={form.goalId}
-                onChange={(e) => setForm((p) => ({ ...p, goalId: e.target.value }))}
-              >
-                <option value="">No goal</option>
-                {goals.map((g) => (
-                  <option key={g.id} value={g.id}>{g.title}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          
+          <div className="grid grid-cols-2 gap-4">
+            {habits.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Link Habit</label>
+                <select
+                  className="select"
+                  value={form.habitId}
+                  onChange={(e) => setForm((p) => ({ ...p, habitId: e.target.value }))}
+                >
+                  <option value="">No habit</option>
+                  {habits.map((h) => (
+                    <option key={h.id} value={h.id}>{h.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {goals.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Link Goal</label>
+                <select
+                  className="select"
+                  value={form.goalId}
+                  onChange={(e) => setForm((p) => ({ ...p, goalId: e.target.value }))}
+                >
+                  <option value="">No goal</option>
+                  {goals.map((g) => (
+                    <option key={g.id} value={g.id}>{g.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setOpen(false)} className="btn-secondary flex-1">Cancel</button>
             <button type="submit" className="btn-primary flex-1" disabled={isPending}>

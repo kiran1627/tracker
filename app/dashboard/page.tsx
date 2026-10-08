@@ -108,6 +108,7 @@ async function getTodayData(userId: string) {
 
   return {
     tasks,
+    habits,
     scheduledHabits,
     goals,
     note,
@@ -154,7 +155,7 @@ export default async function DashboardPage() {
 
       {/* Grid layout for tasks + habits */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TodayTaskList tasks={data.tasks} />
+        <TodayTaskList tasks={data.tasks} goals={data.goals} habits={data.habits} />
         <TodayHabitList habits={data.scheduledHabits} todayStr={data.todayStr} />
       </div>
 

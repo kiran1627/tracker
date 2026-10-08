@@ -21,13 +21,18 @@ export default async function TasksPage() {
     select: { id: true, title: true },
   });
 
+  const habits = await prisma.habit.findMany({
+    where: { userId, active: true },
+    select: { id: true, title: true },
+  });
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Tasks</h1>
         <p className="text-sm text-slate-500 mt-0.5">All your specific actions</p>
       </div>
-      <TasksClient tasks={tasks} goals={goals} />
+      <TasksClient tasks={tasks} goals={goals} habits={habits} />
     </div>
   );
 }

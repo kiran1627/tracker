@@ -20,7 +20,25 @@ interface Task {
   goal: { id: string; title: string } | null;
 }
 
-export function TodayTaskList({ tasks: initialTasks }: { tasks: Task[] }) {
+interface Goal {
+  id: string;
+  title: string;
+}
+
+interface Habit {
+  id: string;
+  title: string;
+}
+
+export function TodayTaskList({ 
+  tasks: initialTasks, 
+  goals = [], 
+  habits = [] 
+}: { 
+  tasks: Task[]; 
+  goals?: Goal[]; 
+  habits?: Habit[]; 
+}) {
   const [tasks, setTasks] = useState(initialTasks);
   
   useEffect(() => {
@@ -33,7 +51,21 @@ export function TodayTaskList({ tasks: initialTasks }: { tasks: Task[] }) {
     priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH',
     estimatedMin: '',
     time: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    habitId: '',
+    goalId: '',
   });
+
+  const handleOpenNew = (isTomorrow = false) => {
+    const d = new Date();
+    if (isTomorrow) d.setDate(d.getDate() + 1);
+    
+    setForm(prev => ({
+      ...prev,
+      date: format(d, 'yyyy-MM-dd'),
+    }));
+    setOpen(true);
+  };
 
   const handleComplete = (id: string) => {
     // Optimistic update for instant UI feedback
@@ -62,11 +94,13 @@ export function TodayTaskList({ tasks: initialTasks }: { tasks: Task[] }) {
       await createTask({
         title: form.title,
         priority: form.priority,
-        date: format(new Date(), 'yyyy-MM-dd'),
+        date: form.date,
         estimatedMin: form.estimatedMin ? parseInt(form.estimatedMin) : undefined,
         time: form.time || undefined,
+        habitId: form.habitId || undefined,
+        goalId: form.goalId || undefined,
       });
-      setForm({ title: '', priority: 'MEDIUM', estimatedMin: '', time: '' });
+      setForm({ title: '', priority: 'MEDIUM', estimatedMin: '', time: '', date: format(new Date(), 'yyyy-MM-dd'), habitId: '', goalId: '' });
       setOpen(false);
     });
   };
@@ -86,14 +120,22 @@ export function TodayTaskList({ tasks: initialTasks }: { tasks: Task[] }) {
             </span>
           )}
         </div>
-        <button
-          id="add-task-btn"
-          onClick={() => setOpen(true)}
-          className="btn-ghost text-indigo-600 hover:bg-indigo-50"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline text-xs">Add</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleOpenNew(true)}
+            className="btn-ghost text-slate-500 hover:bg-slate-100"
+          >
+            <span className="hidden sm:inline text-xs">Plan Tomorrow</span>
+          </button>
+          <button
+            id="add-task-btn"
+            onClick={() => handleOpenNew(false)}
+            className="btn-ghost text-indigo-600 hover:bg-indigo-50"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline text-xs">Add</span>
+          </button>
+        </div>
       </div>
 
       {tasks.length === 0 ? (
@@ -139,7 +181,7 @@ export function TodayTaskList({ tasks: initialTasks }: { tasks: Task[] }) {
       )}
 
       {/* Quick Add Modal */}
-      <Modal open={open} onClose={() => setOpen(false)} title="Add Task">
+      <Modal open={open} onClose={() => setOpen(false)} title={form.date === format(new Date(), 'yyyy-MM-dd') ? "Add Task for Today" : "Plan Task for Tomorrow"}>
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Task name *</label>
@@ -180,6 +222,39 @@ export function TodayTaskList({ tasks: initialTasks }: { tasks: Task[] }) {
                 onChange={(e) => setForm((p) => ({ ...p, time: e.target.value }))}
               />
             </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {habits.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Link Habit</label>
+                <select
+                  className="select"
+                  value={form.habitId}
+                  onChange={(e) => setForm((p) => ({ ...p, habitId: e.target.value }))}
+                >
+                  <option value="">No habit</option>
+                  {habits.map((h) => (
+                    <option key={h.id} value={h.id}>{h.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {goals.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Link Goal</label>
+                <select
+                  className="select"
+                  value={form.goalId}
+                  onChange={(e) => setForm((p) => ({ ...p, goalId: e.target.value }))}
+                >
+                  <option value="">No goal</option>
+                  {goals.map((g) => (
+                    <option key={g.id} value={g.id}>{g.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setOpen(false)} className="btn-secondary flex-1">

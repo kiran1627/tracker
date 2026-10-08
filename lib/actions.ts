@@ -15,6 +15,7 @@ export async function createTask(data: {
   goalId?: string;
   estimatedMin?: number;
   time?: string;
+  habitId?: string;
 }) {
   const userId = await getCurrentUserId();
   const task = await prisma.task.create({
@@ -27,6 +28,7 @@ export async function createTask(data: {
       goalId: data.goalId || null,
       estimatedMin: data.estimatedMin,
       time: data.time || null,
+      habitId: data.habitId || null,
     },
   });
   revalidatePath('/');
