@@ -11,7 +11,10 @@ export default async function TasksPage() {
 
   const tasks = await prisma.task.findMany({
     where: { userId },
-    include: { goal: { select: { id: true, title: true } } },
+    include: { 
+      goal: { select: { id: true, title: true } },
+      habit: { select: { id: true, title: true } }
+    },
     orderBy: [{ date: 'desc' }, { priority: 'desc' }],
     take: 100,
   });

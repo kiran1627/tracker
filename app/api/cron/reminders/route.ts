@@ -40,6 +40,9 @@ export async function GET(req: Request) {
           userId: user.id,
           completed: false,
           date: todayDate
+        },
+        include: {
+          habit: { select: { title: true } }
         }
       });
 
@@ -47,16 +50,36 @@ export async function GET(req: Request) {
       if (pendingTasks.length === 0) continue; 
 
       // 5. Build the email body
-      const taskListHtml = pendingTasks
-        .map(t => `<li style="margin-bottom: 8px;"><b>${t.title}</b> <span style="color: gray; font-size: 12px;">(${t.priority.toLowerCase()} priority)</span></li>`)
-        .join('');
+      const standaloneTasks = [];
+      const habitGroups: Record<string, typeof pendingTasks> = {};
+      
+      for (const t of pendingTasks) {
+        if (t.habit) {
+          if (!habitGroups[t.habit.title]) habitGroups[t.habit.title] = [];
+          habitGroups[t.habit.title].push(t);
+        } else {
+          standaloneTasks.push(t);
+        }
+      }
+      
+      let taskListHtml = '';
+      if (standaloneTasks.length > 0) {
+        taskListHtml += standaloneTasks.map(t => `<li style="margin-bottom: 8px;"><b>${t.title}</b> <span style="color: gray; font-size: 12px;">(${t.priority.toLowerCase()} priority)</span></li>`).join('');
+      }
+      
+      for (const [habitName, hTasks] of Object.entries(habitGroups)) {
+        taskListHtml += `<li style="margin-bottom: 8px; margin-top: 16px;"><b style="color: #c026d3;">⟳ ${habitName}</b>`;
+        taskListHtml += `<ul style="margin-top: 8px; color: #333; font-size: 14px; padding-left: 15px;">`;
+        taskListHtml += hTasks.map(t => `<li style="margin-bottom: 4px;">${t.title}</li>`).join('');
+        taskListHtml += `</ul></li>`;
+      }
       
       const htmlContent = `
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
           <h2 style="color: #4F46E5;">Good morning, ${user.name || 'there'}! 👋</h2>
           <p style="color: #333; font-size: 16px;">Here are your pending tasks scheduled for today (${format(new Date(), 'EEEE, MMMM d')}):</p>
           
-          <ul style="color: #333; font-size: 15px; padding-left: 20px;">
+          <ul style="color: #333; font-size: 15px; padding-left: 20px; list-style-type: none; margin: 0; padding: 0;">
             ${taskListHtml}
           </ul>
           

@@ -19,7 +19,10 @@ async function getTodayData(userId: string) {
   // Get today's tasks
   const tasks = await prisma.task.findMany({
     where: { userId, date: todayDate },
-    include: { goal: { select: { id: true, title: true } } },
+    include: { 
+      goal: { select: { id: true, title: true } },
+      habit: { select: { id: true, title: true } }
+    },
     orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
   });
 

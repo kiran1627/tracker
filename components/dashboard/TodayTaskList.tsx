@@ -18,6 +18,7 @@ interface Task {
   estimatedMin: number | null;
   time: string | null;
   goal: { id: string; title: string } | null;
+  habit?: { id: string; title: string } | null;
 }
 
 interface Goal {
@@ -237,7 +238,7 @@ export function TodayTaskList({
                     setForm((p) => ({
                       ...p,
                       habitId: selectedId,
-                      title: selectedHabit && !p.title ? selectedHabit.title : (selectedHabit ? selectedHabit.title : p.title)
+                      title: selectedHabit && !p.title ? selectedHabit.title : p.title
                     }));
                   }}
                 >
@@ -340,6 +341,11 @@ function TaskItem({
             <span className="flex items-center gap-0.5 text-[11px] text-slate-400">
               <Clock className="w-3 h-3" />
               {task.estimatedMin}m
+            </span>
+          )}
+          {task.habit && (
+            <span className="text-[11px] text-fuchsia-500 truncate max-w-[120px]">
+              ⟳ {task.habit.title}
             </span>
           )}
           {task.goal && (

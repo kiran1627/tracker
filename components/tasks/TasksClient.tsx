@@ -19,6 +19,7 @@ interface Task {
   estimatedMin: number | null;
   time: string | null;
   goal: { id: string; title: string } | null;
+  habit?: { id: string; title: string } | null;
 }
 
 interface Goal {
@@ -170,6 +171,9 @@ export function TasksClient({ tasks: initialTasks, goals, habits = [] }: { tasks
                       {task.estimatedMin}m
                     </span>
                   )}
+                  {task.habit && (
+                    <span className="text-[11px] text-fuchsia-500">⟳ {task.habit.title}</span>
+                  )}
                   {task.goal && (
                     <span className="text-[11px] text-indigo-400">↳ {task.goal.title}</span>
                   )}
@@ -278,7 +282,7 @@ export function TasksClient({ tasks: initialTasks, goals, habits = [] }: { tasks
                     setForm((p) => ({
                       ...p,
                       habitId: selectedId,
-                      title: selectedHabit && !p.title ? selectedHabit.title : (selectedHabit ? selectedHabit.title : p.title)
+                      title: selectedHabit && !p.title ? selectedHabit.title : p.title
                     }));
                   }}
                 >
