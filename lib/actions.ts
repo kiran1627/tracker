@@ -278,3 +278,21 @@ export async function saveDailyNote(data: {
   revalidatePath('/notes');
   return note;
 }
+
+// ── Focus Timer ──────────────────────────────────────────
+
+export async function logFocusSession(durationMin: number) {
+  const userId = await getCurrentUserId();
+  const date = today();
+
+  const session = await prisma.focusSession.create({
+    data: {
+      userId,
+      durationMin,
+      date,
+    }
+  });
+
+  revalidatePath('/');
+  return session;
+}

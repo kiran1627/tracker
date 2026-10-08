@@ -67,6 +67,7 @@ model User {
   tasks            Task[]
   dailyNotes       DailyNote[]
   userAchievements UserAchievement[]
+  focusSessions    FocusSession[]
 }
 
 enum GoalStatus {
@@ -228,4 +229,16 @@ model UserAchievement {
 
   @@unique([userId, achievementId])
   @@index([userId])
+}
+
+model FocusSession {
+  id          String   @id @default(cuid())
+  userId      String
+  durationMin Int
+  completedAt DateTime @default(now())
+  date        DateTime @db.Date
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
 }
