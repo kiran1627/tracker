@@ -132,6 +132,7 @@ model Habit {
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal         Goal?          @relation(fields: [goalId], references: [id], onDelete: SetNull)
   logs         HabitLog[]
+  tasks        Task[]
 
   @@index([userId])
   @@index([goalId])
@@ -176,10 +177,12 @@ model Task {
   updatedAt    DateTime     @updatedAt
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal         Goal?        @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  habit        Habit?       @relation(fields: [habitId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([date])
   @@index([goalId])
+  @@index([habitId])
 }
 
 enum Mood {
