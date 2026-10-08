@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Plus, Check, Trash2, Clock, Calendar } from 'lucide-react';
 import { completeTask, createTask, deleteTask } from '@/lib/actions';
 import { cn, getPriorityColor } from '@/lib/utils';
@@ -26,9 +26,14 @@ interface Goal {
   title: string;
 }
 
-export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) {
+export function TasksClient({ tasks: initialTasks, goals }: { tasks: Task[]; goals: Goal[] }) {
+  const [tasks, setTasks] = useState(initialTasks);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
   const [filter, setFilter] = useState<'ALL' | 'TODAY' | 'UPCOMING' | 'PAST'>('TODAY');
   const [form, setForm] = useState({
     title: '',
@@ -119,7 +124,10 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
               {/* Checkbox */}
               <button
                 id={`task-check-${task.id}`}
-                onClick={() => startTransition(async () => { await completeTask(task.id); })}
+                onClick={() => {
+                  setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed: !t.completed, completedAt: !t.completed ? new Date() : null } : t));
+                  startTransition(async () => { await completeTask(task.id); })
+                }}
                 className={cn('task-check mt-0.5', task.completed ? 'checked' : 'unchecked')}
                 aria-label={task.completed ? 'Undo' : 'Complete'}
               >
@@ -164,7 +172,10 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
               {/* Delete */}
               <button
                 onClick={() => {
-                  if (confirm('Delete task?')) startTransition(async () => { await deleteTask(task.id); });
+                  if (confirm('Delete task?')) {
+                    setTasks(prev => prev.filter(t => t.id !== task.id));
+                    startTransition(async () => { await deleteTask(task.id); });
+                  }
                 }}
                 className="opacity-0 group-hover:opacity-100 p-1.5 rounded text-slate-300 hover:text-red-500 transition-all"
               >

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Plus, Flame, Check, Trash2, Pencil } from 'lucide-react';
 import { completeHabit, createHabit, deleteHabit } from '@/lib/actions';
 import { cn, safePercent } from '@/lib/utils';
@@ -36,7 +36,7 @@ const ICONS = ['⭐', '🧠', '🐍', '🏗️', '🏃', '📚', '🧘', '💪',
 const COLORS = ['#6366F1', '#8B5CF6', '#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6'];
 
 export function HabitsClient({
-  habits,
+  habits: initialHabits,
   goals,
   todayStr,
 }: {
@@ -44,8 +44,13 @@ export function HabitsClient({
   goals: Goal[];
   todayStr: string;
 }) {
+  const [habits, setHabits] = useState(initialHabits);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setHabits(initialHabits);
+  }, [initialHabits]);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -61,6 +66,16 @@ export function HabitsClient({
   const archivedHabits = habits.filter((h) => !h.active);
 
   const handleComplete = (habitId: string) => {
+    setHabits(prev => prev.map(h => {
+      if (h.id === habitId) {
+        const todayLog = h.logs.find(l => format(new Date(l.date), 'yyyy-MM-dd') === todayStr);
+        const isCompleted = todayLog?.completed;
+        const newLogs = h.logs.filter(l => format(new Date(l.date), 'yyyy-MM-dd') !== todayStr);
+        newLogs.push({ date: new Date(), completed: !isCompleted });
+        return { ...h, logs: newLogs };
+      }
+      return h;
+    }));
     startTransition(async () => { await completeHabit(habitId, todayStr); });
   };
 
@@ -84,6 +99,7 @@ export function HabitsClient({
 
   const handleDelete = (id: string) => {
     if (confirm('Delete this habit and all its logs?')) {
+      setHabits(prev => prev.filter(h => h.id !== id));
       startTransition(async () => { await deleteHabit(id); });
     }
   };

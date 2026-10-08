@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import { Repeat2, Check, Flame } from 'lucide-react';
 import { completeHabit } from '@/lib/actions';
 import { cn } from '@/lib/utils';
@@ -23,10 +23,27 @@ interface TodayHabitListProps {
   todayStr: string;
 }
 
-export function TodayHabitList({ habits, todayStr }: TodayHabitListProps) {
+export function TodayHabitList({ habits: initialHabits, todayStr }: TodayHabitListProps) {
+  const [habits, setHabits] = useState(initialHabits);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    setHabits(initialHabits);
+  }, [initialHabits]);
+
   const handleComplete = (habitId: string) => {
+    // Optimistic update
+    setHabits(prev => prev.map(h => {
+      if (h.id === habitId) {
+        const isCompleted = h.logs[0]?.completed;
+        return {
+          ...h,
+          logs: [{ completed: !isCompleted, completedAt: !isCompleted ? new Date() : null }]
+        };
+      }
+      return h;
+    }));
+
     startTransition(async () => {
       await completeHabit(habitId, todayStr);
     });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { CheckSquare, Plus, Clock, Trash2, Check } from 'lucide-react';
 import { completeTask, deleteTask, createTask } from '@/lib/actions';
 import { getPriorityColor, cn } from '@/lib/utils';
@@ -20,7 +20,12 @@ interface Task {
   goal: { id: string; title: string } | null;
 }
 
-export function TodayTaskList({ tasks }: { tasks: Task[] }) {
+export function TodayTaskList({ tasks: initialTasks }: { tasks: Task[] }) {
+  const [tasks, setTasks] = useState(initialTasks);
+  
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
@@ -31,6 +36,10 @@ export function TodayTaskList({ tasks }: { tasks: Task[] }) {
   });
 
   const handleComplete = (id: string) => {
+    // Optimistic update for instant UI feedback
+    setTasks(prev => prev.map(t => 
+      t.id === id ? { ...t, completed: !t.completed, completedAt: !t.completed ? new Date() : null } : t
+    ));
     startTransition(async () => {
       await completeTask(id);
     });
@@ -38,6 +47,8 @@ export function TodayTaskList({ tasks }: { tasks: Task[] }) {
 
   const handleDelete = (id: string) => {
     if (confirm('Delete this task?')) {
+      // Optimistic delete
+      setTasks(prev => prev.filter(t => t.id !== id));
       startTransition(async () => {
         await deleteTask(id);
       });
