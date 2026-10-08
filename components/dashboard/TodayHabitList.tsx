@@ -29,7 +29,7 @@ interface TodayHabitListProps {
   }>;
 }
 
-export function TodayHabitList({ habits: initialHabits, todayStr }: TodayHabitListProps) {
+export function TodayHabitList({ habits: initialHabits, todayStr, tasks }: TodayHabitListProps) {
   const [habits, setHabits] = useState(initialHabits);
   const [isPending, startTransition] = useTransition();
 
