@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    // 1. Verify Vercel Cron request using secret
+    // 1. Verify Vercel Cron request using secret (mandatory)
     const authHeader = req.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -23,22 +23,21 @@ export async function GET(req: Request) {
       },
     });
 
-    // 3. Fetch all users who have an email
+    // 3. Fetch only the two specified users
     const users = await prisma.user.findMany({
-      where: { email: { not: null } }
+      where: { 
+        email: { 
+          in: ['kiranbabub18@gmail.com', 'sukanyal1627@gmail.com'] 
+        } 
+      }
     });
-
-    const url = new URL(req.url);
-    const testTomorrow = url.searchParams.get('testTomorrow') === 'true';
     
-    let targetDate = today();
-    if (testTomorrow) {
-      targetDate = new Date();
-      targetDate.setUTCMinutes(targetDate.getUTCMinutes() + 330);
-      targetDate.setUTCHours(targetDate.getUTCHours() - 8);
-      targetDate.setUTCDate(targetDate.getUTCDate() + 1); // Tomorrow
-      targetDate = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate()));
-    }
+    // Always target Tomorrow's date
+    let targetDate = new Date();
+    targetDate.setUTCMinutes(targetDate.getUTCMinutes() + 330); // IST Offset
+    targetDate.setUTCHours(targetDate.getUTCHours() - 8); // Rollover logic
+    targetDate.setUTCDate(targetDate.getUTCDate() + 1); // Add 1 day for tomorrow
+    targetDate = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate()));
     
     let emailsSent = 0;
 
@@ -88,7 +87,7 @@ export async function GET(req: Request) {
       const htmlContent = `
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
           <h2 style="color: #4F46E5;">Good morning, ${user.name || 'there'}! 👋</h2>
-          <p style="color: #333; font-size: 16px;">Here are your pending tasks scheduled for ${testTomorrow ? 'TOMORROW' : 'today'} (${format(targetDate, 'EEEE, MMMM d')}):</p>
+          <p style="color: #333; font-size: 16px;">Here are your pending tasks scheduled for tomorrow (${format(targetDate, 'EEEE, MMMM d')}):</p>
           
           <ul style="color: #333; font-size: 15px; padding-left: 20px; list-style-type: none; margin: 0; padding: 0;">
             ${taskListHtml}
@@ -110,8 +109,8 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ success: true, emailsSent });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in CRON job:', error);
-    return new NextResponse('Internal Error', { status: 500 });
+    return new NextResponse(`Error: ${error.message || 'Unknown internal error'}`, { status: 500 });
   }
 }
