@@ -125,7 +125,10 @@ export default async function HabitDetailPage({ params }: { params: { id: string
             const dateStr = format(day, 'yyyy-MM-dd');
             const isCompleted = logMap.get(dateStr);
             const isFuture = day > today;
-            const toggleAction = completeHabit.bind(null, habit.id, dateStr);
+            const toggleAction = async () => {
+              "use server";
+              await completeHabit(habit.id, dateStr);
+            };
             
             return (
               <form key={day.toISOString()} action={toggleAction} className="block w-full h-full">
