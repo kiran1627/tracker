@@ -3,6 +3,7 @@ import { getCurrentUserId } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, Flame, Target, Repeat2, Calendar as CalIcon } from 'lucide-react';
+import { completeHabit } from '@/lib/actions';
 import { safePercent, cn } from '@/lib/utils';
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 
@@ -121,21 +122,26 @@ export default async function HabitDetailPage({ params }: { params: { id: string
           ))}
 
           {monthDays.map(day => {
-            const isCompleted = logMap.get(format(day, 'yyyy-MM-dd'));
+            const dateStr = format(day, 'yyyy-MM-dd');
+            const isCompleted = logMap.get(dateStr);
             const isFuture = day > today;
+            const toggleAction = completeHabit.bind(null, habit.id, dateStr);
             
             return (
-              <div 
-                key={day.toISOString()}
-                className={cn(
-                  'aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-colors',
-                  isCompleted ? 'text-white' : isFuture ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-500'
-                )}
-                style={isCompleted ? { backgroundColor: habit.color } : undefined}
-                title={format(day, 'MMMM d')}
-              >
-                {format(day, 'd')}
-              </div>
+              <form key={day.toISOString()} action={toggleAction} className="block w-full h-full">
+                <button 
+                  type="submit"
+                  disabled={isFuture}
+                  className={cn(
+                    'w-full aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all hover:scale-105 active:scale-95',
+                    isCompleted ? 'text-white shadow-sm' : isFuture ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer'
+                  )}
+                  style={isCompleted ? { backgroundColor: habit.color } : undefined}
+                  title={format(day, 'MMMM d, yyyy')}
+                >
+                  {format(day, 'd')}
+                </button>
+              </form>
             );
           })}
         </div>
