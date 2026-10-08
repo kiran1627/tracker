@@ -6,10 +6,15 @@ import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, startOf
  */
 export function today(): Date {
   const d = new Date();
-  // Shift time backwards by 8 hours so the day rolls over at 8 AM local
-  d.setHours(d.getHours() - 8);
-  // Return UTC midnight for the local date
-  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  // Vercel servers run in UTC. To get the user's correct local time (IST = +5:30), 
+  // we add 330 minutes to the UTC time.
+  d.setUTCMinutes(d.getUTCMinutes() + 330);
+  
+  // Shift time backwards by 8 hours so the day rolls over at 8 AM IST
+  d.setUTCHours(d.getUTCHours() - 8);
+  
+  // Return UTC midnight for the calculated date
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 
 /**
@@ -78,9 +83,10 @@ export function getLastNDays(n: number): Date[] {
   const days: Date[] = [];
   for (let i = n - 1; i >= 0; i--) {
     const d = new Date();
-    d.setHours(d.getHours() - 8); // Same 8 AM rollover for consistency
-    d.setDate(d.getDate() - i);
-    days.push(new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())));
+    d.setUTCMinutes(d.getUTCMinutes() + 330); // IST Offset
+    d.setUTCHours(d.getUTCHours() - 8); // Same 8 AM rollover for consistency
+    d.setUTCDate(d.getUTCDate() - i);
+    days.push(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())));
   }
   return days;
 }
