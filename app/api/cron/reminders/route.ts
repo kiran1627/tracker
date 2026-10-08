@@ -28,7 +28,18 @@ export async function GET(req: Request) {
       where: { email: { not: null } }
     });
 
-    const todayDate = today();
+    const url = new URL(req.url);
+    const testTomorrow = url.searchParams.get('testTomorrow') === 'true';
+    
+    let targetDate = today();
+    if (testTomorrow) {
+      targetDate = new Date();
+      targetDate.setUTCMinutes(targetDate.getUTCMinutes() + 330);
+      targetDate.setUTCHours(targetDate.getUTCHours() - 8);
+      targetDate.setUTCDate(targetDate.getUTCDate() + 1); // Tomorrow
+      targetDate = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate()));
+    }
+    
     let emailsSent = 0;
 
     for (const user of users) {
@@ -39,7 +50,7 @@ export async function GET(req: Request) {
         where: {
           userId: user.id,
           completed: false,
-          date: todayDate
+          date: targetDate
         },
         include: {
           habit: { select: { title: true } }
@@ -77,7 +88,7 @@ export async function GET(req: Request) {
       const htmlContent = `
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
           <h2 style="color: #4F46E5;">Good morning, ${user.name || 'there'}! 👋</h2>
-          <p style="color: #333; font-size: 16px;">Here are your pending tasks scheduled for today (${format(new Date(), 'EEEE, MMMM d')}):</p>
+          <p style="color: #333; font-size: 16px;">Here are your pending tasks scheduled for ${testTomorrow ? 'TOMORROW' : 'today'} (${format(targetDate, 'EEEE, MMMM d')}):</p>
           
           <ul style="color: #333; font-size: 15px; padding-left: 20px; list-style-type: none; margin: 0; padding: 0;">
             ${taskListHtml}
@@ -88,11 +99,10 @@ export async function GET(req: Request) {
         </div>
       `;
 
-      // 6. Send the email using Gmail
       await transporter.sendMail({
         from: `"HabitFlow" <${process.env.EMAIL_USER}>`,
         to: user.email,
-        subject: `📅 Your Tasks for ${format(new Date(), 'MMMM d')}`,
+        subject: `📅 Your Tasks for ${format(targetDate, 'MMMM d')}`,
         html: htmlContent,
       });
 
