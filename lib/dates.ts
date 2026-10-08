@@ -1,14 +1,15 @@
 import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 /**
- * Returns today as a Date with time set to 00:00:00
+ * Returns today as a UTC Date with time set to 00:00:00
+ * (Required for matching Prisma @db.Date columns)
  */
 export function today(): Date {
   const d = new Date();
-  // Shift time backwards by 8 hours so the day rolls over at 8 AM
+  // Shift time backwards by 8 hours so the day rolls over at 8 AM local
   d.setHours(d.getHours() - 8);
-  d.setHours(0, 0, 0, 0);
-  return d;
+  // Return UTC midnight for the local date
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
 }
 
 /**
@@ -71,15 +72,15 @@ export function getDayAbbr(date: Date): string {
 }
 
 /**
- * Returns an array of the last N days
+ * Returns an array of the last N days as UTC midnight dates
  */
 export function getLastNDays(n: number): Date[] {
   const days: Date[] = [];
   for (let i = n - 1; i >= 0; i--) {
     const d = new Date();
+    d.setHours(d.getHours() - 8); // Same 8 AM rollover for consistency
     d.setDate(d.getDate() - i);
-    d.setHours(0, 0, 0, 0);
-    days.push(d);
+    days.push(new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())));
   }
   return days;
 }
