@@ -16,6 +16,7 @@ interface Task {
   completed: boolean;
   completedAt: Date | null;
   estimatedMin: number | null;
+  time: string | null;
   goal: { id: string; title: string } | null;
 }
 
@@ -26,6 +27,7 @@ export function TodayTaskList({ tasks }: { tasks: Task[] }) {
     title: '',
     priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH',
     estimatedMin: '',
+    time: '',
   });
 
   const handleComplete = (id: string) => {
@@ -51,8 +53,9 @@ export function TodayTaskList({ tasks }: { tasks: Task[] }) {
         priority: form.priority,
         date: format(new Date(), 'yyyy-MM-dd'),
         estimatedMin: form.estimatedMin ? parseInt(form.estimatedMin) : undefined,
+        time: form.time || undefined,
       });
-      setForm({ title: '', priority: 'MEDIUM', estimatedMin: '' });
+      setForm({ title: '', priority: 'MEDIUM', estimatedMin: '', time: '' });
       setOpen(false);
     });
   };
@@ -155,17 +158,14 @@ export function TodayTaskList({ tasks }: { tasks: Task[] }) {
                 <option value="HIGH">High</option>
               </select>
             </div>
-            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Est. time (min)
+                Time (optional)
               </label>
               <input
-                type="number"
+                type="time"
                 className="input"
-                placeholder="45"
-                value={form.estimatedMin}
-                min={1}
-                onChange={(e) => setForm((p) => ({ ...p, estimatedMin: e.target.value }))}
+                value={form.time}
+                onChange={(e) => setForm((p) => ({ ...p, time: e.target.value }))}
               />
             </div>
           </div>
@@ -235,6 +235,12 @@ function TaskItem({
           <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', priorityColors[task.priority])} />
           <span className="text-[11px] text-slate-400 capitalize">{task.priority.toLowerCase()}</span>
 
+          {task.time && (
+            <span className="flex items-center gap-0.5 text-[11px] font-medium text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded">
+              <Clock className="w-3 h-3" />
+              {task.time}
+            </span>
+          )}
           {task.estimatedMin && (
             <span className="flex items-center gap-0.5 text-[11px] text-slate-400">
               <Clock className="w-3 h-3" />

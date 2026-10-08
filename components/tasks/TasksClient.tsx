@@ -17,6 +17,7 @@ interface Task {
   completed: boolean;
   completedAt: Date | null;
   estimatedMin: number | null;
+  time: string | null;
   goal: { id: string; title: string } | null;
 }
 
@@ -36,6 +37,7 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
     priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH',
     goalId: '',
     estimatedMin: '',
+    time: '',
   });
 
   const filtered = tasks.filter((t) => {
@@ -56,8 +58,9 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
         priority: form.priority,
         goalId: form.goalId || undefined,
         estimatedMin: form.estimatedMin ? parseInt(form.estimatedMin) : undefined,
+        time: form.time || undefined,
       });
-      setForm({ title: '', description: '', date: format(new Date(), 'yyyy-MM-dd'), priority: 'MEDIUM', goalId: '', estimatedMin: '' });
+      setForm({ title: '', description: '', date: format(new Date(), 'yyyy-MM-dd'), priority: 'MEDIUM', goalId: '', estimatedMin: '', time: '' });
       setOpen(false);
     });
   };
@@ -140,6 +143,12 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
                     <Calendar className="w-3 h-3" />
                     {format(new Date(task.date), 'MMM d')}
                   </span>
+                  {task.time && (
+                    <span className="flex items-center gap-1 text-[11px] font-medium text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded">
+                      <Clock className="w-3 h-3" />
+                      {task.time}
+                    </span>
+                  )}
                   {task.estimatedMin && (
                     <span className="flex items-center gap-1 text-[11px] text-slate-400">
                       <Clock className="w-3 h-3" />
@@ -217,6 +226,15 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Time (optional)</label>
+              <input
+                type="time"
+                className="input"
+                value={form.time}
+                onChange={(e) => setForm((p) => ({ ...p, time: e.target.value }))}
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Est. time (min)</label>
               <input
                 type="number"
@@ -227,22 +245,22 @@ export function TasksClient({ tasks, goals }: { tasks: Task[]; goals: Goal[] }) 
                 onChange={(e) => setForm((p) => ({ ...p, estimatedMin: e.target.value }))}
               />
             </div>
-            {goals.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Goal</label>
-                <select
-                  className="select"
-                  value={form.goalId}
-                  onChange={(e) => setForm((p) => ({ ...p, goalId: e.target.value }))}
-                >
-                  <option value="">No goal</option>
-                  {goals.map((g) => (
-                    <option key={g.id} value={g.id}>{g.title}</option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
+          {goals.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Goal</label>
+              <select
+                className="select"
+                value={form.goalId}
+                onChange={(e) => setForm((p) => ({ ...p, goalId: e.target.value }))}
+              >
+                <option value="">No goal</option>
+                {goals.map((g) => (
+                  <option key={g.id} value={g.id}>{g.title}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setOpen(false)} className="btn-secondary flex-1">Cancel</button>
             <button type="submit" className="btn-primary flex-1" disabled={isPending}>

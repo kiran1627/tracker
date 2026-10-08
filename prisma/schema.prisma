@@ -167,6 +167,7 @@ model Task {
   title        String
   description  String?
   date         DateTime     @db.Date
+  time         String?
   priority     TaskPriority @default(MEDIUM)
   completed    Boolean      @default(false)
   completedAt  DateTime?

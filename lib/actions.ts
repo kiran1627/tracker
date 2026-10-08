@@ -14,6 +14,7 @@ export async function createTask(data: {
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   goalId?: string;
   estimatedMin?: number;
+  time?: string;
 }) {
   const userId = await getCurrentUserId();
   const task = await prisma.task.create({
@@ -25,6 +26,7 @@ export async function createTask(data: {
       priority: data.priority,
       goalId: data.goalId || null,
       estimatedMin: data.estimatedMin,
+      time: data.time || null,
     },
   });
   revalidatePath('/');
@@ -65,6 +67,7 @@ export async function updateTask(taskId: string, data: {
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
   goalId?: string | null;
   estimatedMin?: number;
+  time?: string | null;
 }) {
   const userId = await getCurrentUserId();
   const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
@@ -78,6 +81,7 @@ export async function updateTask(taskId: string, data: {
       ...(data.priority && { priority: data.priority }),
       ...(data.goalId !== undefined && { goalId: data.goalId }),
       ...(data.estimatedMin !== undefined && { estimatedMin: data.estimatedMin }),
+      ...(data.time !== undefined && { time: data.time }),
     },
   });
   revalidatePath('/');
