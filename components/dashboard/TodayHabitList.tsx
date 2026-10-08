@@ -1,8 +1,8 @@
 'use client';
 
 import { useTransition, useState, useEffect } from 'react';
-import { Repeat2, Check, Flame } from 'lucide-react';
-import { completeHabit } from '@/lib/actions';
+import { Repeat2, Check, Flame, Trash2 } from 'lucide-react';
+import { completeHabit, completeTask, deleteTask } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -55,6 +55,18 @@ export function TodayHabitList({ habits: initialHabits, todayStr, tasks }: Today
     });
   };
 
+  const handleDeleteTask = (taskId: string) => {
+    startTransition(async () => {
+      await deleteTask(taskId);
+    });
+  };
+
+  const handleCompleteTask = (taskId: string) => {
+    startTransition(async () => {
+      await completeTask(taskId);
+    });
+  };
+
   const pending = habits.filter((h) => !h.logs[0]?.completed);
   const done = habits.filter((h) => h.logs[0]?.completed);
 
@@ -101,6 +113,8 @@ export function TodayHabitList({ habits: initialHabits, todayStr, tasks }: Today
                     habit={habit} 
                     habitTasks={habitTasks}
                     onComplete={handleComplete} 
+                    onDeleteTask={handleDeleteTask}
+                    onCompleteTask={handleCompleteTask}
                     isPending={isPending} 
                   />
                 );
@@ -121,6 +135,8 @@ export function TodayHabitList({ habits: initialHabits, todayStr, tasks }: Today
                     habit={habit} 
                     habitTasks={habitTasks}
                     onComplete={handleComplete} 
+                    onDeleteTask={handleDeleteTask}
+                    onCompleteTask={handleCompleteTask}
                     isPending={isPending} 
                   />
                 );
@@ -137,11 +153,15 @@ function HabitItem({
   habit,
   habitTasks,
   onComplete,
+  onDeleteTask,
+  onCompleteTask,
   isPending,
 }: {
   habit: Habit;
   habitTasks: Array<{ id: string; title: string; completed: boolean }>;
   onComplete: (id: string) => void;
+  onDeleteTask: (id: string) => void;
+  onCompleteTask: (id: string) => void;
   isPending: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -211,19 +231,38 @@ function HabitItem({
       {expanded && habitTasks.length > 0 && (
         <div className="ml-4 pl-4 border-l-2 border-slate-100 space-y-2 py-1">
           {habitTasks.map(task => (
-            <div key={task.id} className="flex items-center gap-2">
-              <div className={cn(
-                "w-3 h-3 rounded-sm border",
-                task.completed ? "bg-indigo-500 border-indigo-500" : "border-slate-300"
-              )}>
-                {task.completed && <Check className="w-2 h-2 text-white m-0.5" />}
-              </div>
-              <span className={cn(
-                "text-xs",
-                task.completed ? "text-slate-400 line-through" : "text-slate-700"
-              )}>
-                {task.title}
-              </span>
+            <div key={task.id} className="group flex items-center justify-between gap-2">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onCompleteTask(task.id); }}
+                disabled={isPending}
+                className="flex items-center gap-2 flex-1 text-left"
+              >
+                <div className={cn(
+                  "w-3.5 h-3.5 rounded-sm flex items-center justify-center border transition-colors",
+                  task.completed ? "bg-indigo-500 border-indigo-500" : "border-slate-300 hover:border-indigo-400"
+                )}>
+                  {task.completed && <Check className="w-2.5 h-2.5 text-white" />}
+                </div>
+                <span className={cn(
+                  "text-xs font-medium",
+                  task.completed ? "text-slate-400 line-through" : "text-slate-700 hover:text-indigo-600 transition-colors"
+                )}>
+                  {task.title}
+                </span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm('Delete this task?')) {
+                    onDeleteTask(task.id);
+                  }
+                }}
+                disabled={isPending}
+                className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-300 hover:text-red-500 transition-all"
+                aria-label="Delete task"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           ))}
         </div>
