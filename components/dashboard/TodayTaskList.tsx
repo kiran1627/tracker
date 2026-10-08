@@ -231,7 +231,15 @@ export function TodayTaskList({
                 <select
                   className="select"
                   value={form.habitId}
-                  onChange={(e) => setForm((p) => ({ ...p, habitId: e.target.value }))}
+                  onChange={(e) => {
+                    const selectedId = e.target.value;
+                    const selectedHabit = habits.find(h => h.id === selectedId);
+                    setForm((p) => ({
+                      ...p,
+                      habitId: selectedId,
+                      title: selectedHabit && !p.title ? selectedHabit.title : (selectedHabit ? selectedHabit.title : p.title)
+                    }));
+                  }}
                 >
                   <option value="">No habit</option>
                   {habits.map((h) => (
