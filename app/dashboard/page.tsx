@@ -164,7 +164,7 @@ export default async function DashboardPage() {
 
       {/* Goals */}
       {data.goals.length > 0 && (
-        <GoalProgressList goals={data.goals} />
+        <GoalProgressList goals={data.goals} tasks={data.tasks} />
       )}
 
       {/* Daily Note */}

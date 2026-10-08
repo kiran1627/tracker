@@ -228,43 +228,47 @@ function HabitItem({
       </div>
 
       {/* Expanded tasks */}
-      {expanded && habitTasks.length > 0 && (
+      {expanded && (
         <div className="ml-4 pl-4 border-l-2 border-slate-100 space-y-2 py-1">
-          {habitTasks.map(task => (
-            <div key={task.id} className="group flex items-center justify-between gap-2">
-              <button 
-                onClick={(e) => { e.stopPropagation(); onCompleteTask(task.id); }}
-                disabled={isPending}
-                className="flex items-center gap-2 flex-1 text-left"
-              >
-                <div className={cn(
-                  "w-3.5 h-3.5 rounded-sm flex items-center justify-center border transition-colors",
-                  task.completed ? "bg-indigo-500 border-indigo-500" : "border-slate-300 hover:border-indigo-400"
-                )}>
-                  {task.completed && <Check className="w-2.5 h-2.5 text-white" />}
-                </div>
-                <span className={cn(
-                  "text-xs font-medium",
-                  task.completed ? "text-slate-400 line-through" : "text-slate-700 hover:text-indigo-600 transition-colors"
-                )}>
-                  {task.title}
-                </span>
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm('Delete this task?')) {
-                    onDeleteTask(task.id);
-                  }
-                }}
-                disabled={isPending}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-300 hover:text-red-500 transition-all"
-                aria-label="Delete task"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ))}
+          {habitTasks.length === 0 ? (
+            <p className="text-[11px] text-slate-400 italic">No tasks linked today.</p>
+          ) : (
+            habitTasks.map(task => (
+              <div key={task.id} className="group flex items-center justify-between gap-2">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onCompleteTask(task.id); }}
+                  disabled={isPending}
+                  className="flex items-center gap-2 flex-1 text-left"
+                >
+                  <div className={cn(
+                    "w-3.5 h-3.5 rounded-sm flex items-center justify-center border transition-colors",
+                    task.completed ? "bg-indigo-500 border-indigo-500" : "border-slate-300 hover:border-indigo-400"
+                  )}>
+                    {task.completed && <Check className="w-2.5 h-2.5 text-white" />}
+                  </div>
+                  <span className={cn(
+                    "text-xs font-medium",
+                    task.completed ? "text-slate-400 line-through" : "text-slate-700 hover:text-indigo-600 transition-colors"
+                  )}>
+                    {task.title}
+                  </span>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm('Delete this task?')) {
+                      onDeleteTask(task.id);
+                    }
+                  }}
+                  disabled={isPending}
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-300 hover:text-red-500 transition-all"
+                  aria-label="Delete task"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>
