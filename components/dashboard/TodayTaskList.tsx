@@ -343,11 +343,6 @@ function TaskItem({
               {task.estimatedMin}m
             </span>
           )}
-          {task.habit && (
-            <span className="text-[11px] text-fuchsia-500 truncate max-w-[120px]">
-              ⟳ {task.habit.title}
-            </span>
-          )}
           {task.goal && (
             <span className="text-[11px] text-indigo-400 truncate max-w-[120px]">
               ↳ {task.goal.title}

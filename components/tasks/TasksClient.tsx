@@ -171,9 +171,6 @@ export function TasksClient({ tasks: initialTasks, goals, habits = [] }: { tasks
                       {task.estimatedMin}m
                     </span>
                   )}
-                  {task.habit && (
-                    <span className="text-[11px] text-fuchsia-500">⟳ {task.habit.title}</span>
-                  )}
                   {task.goal && (
                     <span className="text-[11px] text-indigo-400">↳ {task.goal.title}</span>
                   )}
