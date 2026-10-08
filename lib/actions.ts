@@ -46,6 +46,11 @@ export async function completeTask(taskId: string) {
       completedAt: task.completed ? null : new Date(),
     },
   });
+
+  if (updated.completed && updated.habitId) {
+    const dateStr = updated.date.toISOString().split('T')[0];
+    await completeHabit(updated.habitId, dateStr);
+  }
   revalidatePath('/');
   revalidatePath('/tasks');
   revalidatePath('/progress');
