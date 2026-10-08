@@ -138,7 +138,7 @@ export default async function DashboardPage() {
           {greeting}, {userName} 👋
         </h1>
         <p className="text-sm text-slate-500 mt-0.5">
-          {format(data.todayDate, 'EEEE, MMMM d')}
+          {format(new Date(), 'EEEE, MMMM d')}
         </p>
       </div>
 
