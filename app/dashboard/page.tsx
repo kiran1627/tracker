@@ -45,6 +45,27 @@ async function getTodayData(userId: string) {
     return true;
   });
 
+  // Auto-generate missing tasks for scheduled habits
+  for (const habit of scheduledHabits) {
+    const habitTasks = tasks.filter(t => t.habitId === habit.id);
+    if (habitTasks.length < habit.target) {
+      for (let i = habitTasks.length; i < habit.target; i++) {
+        const titleSuffix = habit.target > 1 ? ` (${i + 1}/${habit.target})` : '';
+        const newTask = await prisma.task.create({
+          data: {
+            userId,
+            title: `${habit.title}${titleSuffix}`,
+            priority: 'MEDIUM',
+            date: todayDate,
+            habitId: habit.id,
+            goalId: habit.goalId,
+          }
+        });
+        tasks.push(newTask as any);
+      }
+    }
+  }
+
   // Calculate progress
   const completedTasks = tasks.filter((t: any) => t.completed).length;
   const completedHabits = scheduledHabits.filter((h: any) => h.logs[0]?.completed).length;

@@ -49,9 +49,35 @@ export async function completeTask(taskId: string) {
     },
   });
 
-  if (updated.completed && updated.habitId) {
+  if (updated.habitId) {
     const dateStr = updated.date.toISOString().split('T')[0];
-    await completeHabit(updated.habitId, dateStr);
+    
+    // Check if ALL tasks for this habit today are completed
+    const startOfDay = new Date(updated.date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(updated.date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const habitTasks = await prisma.task.findMany({
+      where: { 
+        habitId: updated.habitId, 
+        userId,
+        date: { gte: startOfDay, lte: endOfDay }
+      }
+    });
+    
+    const allCompleted = habitTasks.every(t => t.completed);
+    
+    // Check current habit log state
+    const existingLog = await prisma.habitLog.findUnique({
+      where: { habitId_date: { habitId: updated.habitId, date: startOfDay } }
+    });
+
+    if (allCompleted && !existingLog?.completed) {
+      await completeHabit(updated.habitId, dateStr);
+    } else if (!allCompleted && existingLog?.completed) {
+      await completeHabit(updated.habitId, dateStr); // this toggles it back to incomplete
+    }
   }
   revalidatePath('/');
   revalidatePath('/tasks');
